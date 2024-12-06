@@ -42,14 +42,12 @@ int main(int argc, char *argv[]) {
 
   std::vector<int> left = std::get<0>(tup);
   std::vector<int> right = std::get<1>(tup);
-  std::sort(left.begin(), left.end());
-  std::sort(right.begin(), right.end());
 
   int sum = 0;
   for (int i = 0; i < left.size(); i++) {
-    sum = sum + std::abs(left[i] - right[i]);
+    sum = sum + std::count(right.begin(), right.end(), left[i]) * left[i];
   }
-  std::cout << "The total distance is: " << sum << std::endl;
+  std::cout << "The total similarity score is: " << sum << std::endl;
 
   return 0;
 }
