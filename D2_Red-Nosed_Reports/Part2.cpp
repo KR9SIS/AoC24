@@ -12,7 +12,13 @@ void printVector(std::vector<int> v) {
   std::cout << v[v.size() - 1] << std::endl;
 }
 
-bool is_safe(std::vector<int> report, bool decr = false) {
+bool is_safe(std::vector<int> report) {
+  bool decr;
+  if (report[0] > report[1]) {
+    decr = true;
+  } else {
+    decr = false;
+  }
   bool safe = true;
   int prev = report[0];
   for (int i = 1; i < report.size(); i++) {
@@ -34,6 +40,20 @@ bool is_safe(std::vector<int> report, bool decr = false) {
   }
   return true;
 }
+bool probDamper(std::vector<int> report) {
+  for (int i = 0; i < report.size(); i++) {
+    std::vector<int> test;
+    for (int j = 0; j < report.size(); j++) {
+      if (i != j) {
+        test.push_back(report[j]);
+      }
+    }
+    if (is_safe(test)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 int main(int argc, char *argv[]) {
   std::string filename = "d2_input.txt";
@@ -53,12 +73,7 @@ int main(int argc, char *argv[]) {
     while (getline(fileStream, num, ' ')) {
       report.push_back(std::stoi(num));
     };
-    if (report[0] > report[1]) {
-      if (is_safe(report, true)) {
-        safeReports++;
-      };
-
-    } else if (is_safe(report)) {
+    if (is_safe(report) || probDamper(report)) {
       safeReports++;
     }
   }
