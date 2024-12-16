@@ -16,9 +16,6 @@ class PriorityQueue {
   std::vector<PageNode *> queue;
 
   void help_update_priority(PageNode *p, PageNode *c) {
-    // std::cout << "in help u_p\n"
-    //           << p->page << ", " << p->priority << "\n"
-    //           << c->page << ", " << c->priority << "\n";
     if (p->priority < c->priority) {
       return;
     } else {
@@ -29,58 +26,19 @@ class PriorityQueue {
     }
   }
 
-  void quick_print(std::string name, int priority, int page, int idx,
-                   int size) {
-    std::cout << name << "\n  priority: " << priority << "\n  page: " << page
-              << "\n  idx: " << idx << "\n  size:" << size << std::endl;
-  }
   void help_heapify(int i, int n) {
     int smallest = i;
     int left = 2 * i + 1;
     int right = 2 * i + 2;
 
-    // if (left < n) {
-    //   std::cout << "left cmp\n";
-    //   quick_print("smallest", this->queue[smallest]->priority,
-    //               this->queue[smallest]->page, smallest, n);
-    //   std::cout << "\n";
-    //   quick_print("left", this->queue[left]->priority,
-    //   this->queue[left]->page,
-    //               left, n);
-    //   std::cout << "\n";
-    //   quick_print("right", this->queue[right]->priority,
-    //               this->queue[right]->page, right, n);
-    //   std::cout << "\n";
-    // } else {
-    //   std::cout << "left " << left << " > " << n << " size";
-    // }
     if (left < n &&
         this->queue[left]->priority < this->queue[smallest]->priority) {
       smallest = left;
-      // std::cout << "True\n";
     }
-    // if (right < n) {
-    //   std::cout << "right cmp\n";
-    //   quick_print("smallest", this->queue[smallest]->priority,
-    //               this->queue[smallest]->page, smallest, n);
-    //
-    //   std::cout << "\n";
-    //   quick_print("left", this->queue[left]->priority,
-    //   this->queue[left]->page,
-    //               left, n);
-    //   std::cout << "\n";
-    //   quick_print("right", this->queue[right]->priority,
-    //               this->queue[right]->page, right, n);
-    //
-    // } else {
-    //   std::cout << "left " << left << " > " << n << " size";
-    // }
     if (right < n &&
         this->queue[right]->priority < this->queue[smallest]->priority) {
       smallest = right;
-      // std::cout << "True\n";
     }
-    // std::cout << "\n-------------------------\n";
 
     if (smallest != i) {
       std::swap(this->queue[i], this->queue[smallest]);
@@ -95,6 +53,8 @@ class PriorityQueue {
   }
 
 public:
+  int size() { return this->queue.size(); }
+
   PageNode *insert(int priority, int page) {
     PageNode *new_node = new PageNode();
     new_node->page = page;
@@ -110,6 +70,13 @@ public:
     return new_node;
   };
 
+  PageNode *pop() {
+    std::swap(this->queue[0], this->queue[this->queue.size() - 1]);
+    PageNode *ret = this->queue[this->queue.size() - 1];
+    this->queue.pop_back();
+    return ret;
+  }
+
   PageNode *find(int page) {
     for (int i = 0; i < this->queue.size(); i++) {
       if (this->queue[i]->page == page) {
@@ -120,27 +87,18 @@ public:
   };
 
   void update_priority(PageNode *p, PageNode *c) {
-    // std::cout << "before update_priority\n"
-    //           << p->page << ", " << p->priority << "\n"
-    //           << c->page << ", " << c->priority << "\n";
     this->help_update_priority(p, c);
-    // std::cout << "after update_priority\n"
-    //           << p->page << ", " << p->priority << "\n"
-    //           << c->page << ", " << c->priority << "\n";
     std::vector<PageNode *> old_queue = this->queue;
     this->heapify();
-    std::cout << "heap before heapify:\n";
-    print_queue(old_queue);
-    std::cout << "heap after heapify:\n";
-    print_queue(this->queue);
-    std::cout << "-----------------------------\n" << std::endl;
   }
 
+  void print_queue() { print_queue(this->queue); }
   void print_queue(std::vector<PageNode *> queue) {
     for (int i = 0; i < queue.size(); i++) {
-      std::cout << queue[i]->page << " " << queue[i]->priority << "\n";
+      std::cout << queue[i]->page << " " << queue[i]->priority << " "
+                << queue[i] << "\n";
     }
-    std::cout << "\n" << std::endl;
+    std::cout << std::endl;
   }
 };
 
@@ -176,10 +134,19 @@ int main(int argc, char *argv[]) {
       p = p_queue.insert(0, p_page);
       p_queue.insert(p->priority + 1, c_page);
     }
-    // p_queue.print_queue(this->queue);
   }
-  while (std::getline(my_file, file_line)) {
-    std::cout << file_line << "\n";
+
+  // while (std::getline(my_file, file_line)) {
+  //   std::cout << file_line << "\n";
+  //   // TODO: Implement line checker
+  // }
+
+  std::cout << "Insert end\n";
+  p_queue.print_queue();
+  std::cout << p_queue.size() << " Size\n\n";
+  while (p_queue.size()) {
+    PageNode *min = p_queue.pop();
+    std::cout << min->page << " " << min->priority << "\n";
   }
   std::cout << std::endl;
   my_file.close();
