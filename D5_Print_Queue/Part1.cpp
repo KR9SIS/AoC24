@@ -55,7 +55,7 @@ class PriorityQueue {
     //   std::cout << "left " << left << " > " << n << " size";
     // }
     if (left < n &&
-        &this->queue[left]->priority < &this->queue[smallest]->priority) {
+        this->queue[left]->priority < this->queue[smallest]->priority) {
       smallest = left;
       // std::cout << "True\n";
     }
@@ -76,7 +76,7 @@ class PriorityQueue {
     //   std::cout << "left " << left << " > " << n << " size";
     // }
     if (right < n &&
-        &this->queue[right]->priority < &this->queue[smallest]->priority) {
+        this->queue[right]->priority < this->queue[smallest]->priority) {
       smallest = right;
       // std::cout << "True\n";
     }
