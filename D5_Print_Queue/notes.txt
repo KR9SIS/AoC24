@@ -1,0 +1,30 @@
+Insert cases
+1. P & C don't exist:
+	Insert P
+		add_node(priority=0, page=x)
+		
+	Insert C
+		add_node(priority=P.priority + 1, page=x)
+
+2. P exists, not C:
+	Insert C
+		add_node(priority=P.priority + 1, page=x)
+
+3. C exists, not P:
+	Insert P
+		add_node(priority=C.priority -1, page=x)
+
+4. P & C exist:
+	priority_updater(P, C)
+		if (P.priority < C.priority) {
+			return
+		} else {
+			C.priority = P.priority + 1
+			for child in C.children:
+				priority_update(C, child)
+
+		
+47|53
+97|13, 61, 47
+75|29
+61|13
