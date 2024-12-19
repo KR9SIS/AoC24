@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,14 +14,23 @@ struct PageNode {
 class PriorityQueue {
   std::vector<PageNode *> queue;
 
-  void help_update_priority(PageNode *p, PageNode *c) {
-    if (p->priority < c->priority) {
+  void help_update_priority(PageNode *p, PageNode *c, std::string indent = "",
+                            std::set<int> parents = {}) {
+    if ((p->priority < c->priority) || parents.count(c->page)) {
+      // std::cout << indent << "ret\n";
       return;
     } else {
       c->priority = p->priority + 1;
+      // std::cout << indent << "p: " << p->page << " " << p->priority << "\n"
+      //           << indent << "c: " << c->page << " " << c->priority << "\n";
       for (PageNode *child : c->children) {
-        help_update_priority(c, child);
+        // std::cout << indent << "c child: " << child->page << " "
+        //           << child->priority << "\n";
+        indent += "|  ";
+        parents.insert(p->page);
+        help_update_priority(c, child, indent, parents);
       }
+      // std::cout << indent << "ret\n";
     }
   }
 
@@ -101,6 +111,13 @@ public:
   }
 };
 
+void print_arr(std::vector<int> arr) {
+  for (int i = 0; i < arr.size(); i++) {
+    std::cout << arr[i] << " ";
+  }
+  std::cout << std::endl;
+}
+
 std::vector<int> stov(std::string file_line) {
   std::string num;
   std::vector<int> line_numbers;
@@ -115,6 +132,7 @@ std::vector<int> stov(std::string file_line) {
   line_numbers.push_back(std::stoi(num));
   return line_numbers;
 }
+
 bool check_line(std::vector<int> p_queue_arr, std::vector<int> line_numbers) {
   std::vector<int> tmp;
   for (int i = 0; i < p_queue_arr.size(); i++) {
@@ -130,6 +148,7 @@ bool check_line(std::vector<int> p_queue_arr, std::vector<int> line_numbers) {
   for (int i = 0; i < line_numbers.size(); i++) {
     for (int j = 0; j < tmp.size(); j++) {
       if (line_numbers[i] == tmp[j]) {
+        std::cout << i << " " << j << "\n";
         if (i < j) {
           return false;
         } else {
@@ -138,11 +157,13 @@ bool check_line(std::vector<int> p_queue_arr, std::vector<int> line_numbers) {
       }
     }
   }
+  std::cout << std::endl;
   return true;
 };
+
 int main(int argc, char *argv[]) {
   std::fstream my_file;
-  std::string filename = "small_input.txt";
+  std::string filename = "d5_input.txt";
   my_file.open(filename, std::ios::in);
   if (!my_file.is_open()) {
     std::cout << "File not found: " << filename << std::endl;
@@ -176,10 +197,8 @@ int main(int argc, char *argv[]) {
       c = p_queue.insert(p->priority + 1, c_page);
       p->children.insert(c);
     }
-    p_queue.print_queue();
   }
 
-  p_queue.print_queue();
   std::vector<int> p_queue_arr;
   int p_queue_size = p_queue.size(); // define size here because size will
                                      // decrease with each iteration
@@ -190,10 +209,8 @@ int main(int argc, char *argv[]) {
   int right_order_mid = 0;
   while (std::getline(my_file, file_line)) {
     std::vector<int> line_numbers = stov(file_line);
+
     if (check_line(p_queue_arr, line_numbers)) {
-      if (line_numbers.size() % 2 == 0) {
-        std::cout << line_numbers.size() << "\n";
-      }
       right_order_mid += line_numbers[line_numbers.size() / 2];
     }
   }
