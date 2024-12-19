@@ -7,9 +7,7 @@
 struct PageNode {
   int page;
   int priority;
-  std::vector<PageNode *> children;
-  PageNode *left = nullptr;
-  PageNode *right = nullptr;
+  std::set<PageNode *> children;
 };
 
 class PriorityQueue {
@@ -20,8 +18,8 @@ class PriorityQueue {
       return;
     } else {
       c->priority = p->priority + 1;
-      for (int i = 0; i < c->children.size(); i++) {
-        help_update_priority(c, c->children[i]);
+      for (PageNode *child : c->children) {
+        help_update_priority(c, child);
       }
     }
   }
@@ -74,6 +72,7 @@ public:
     std::swap(this->queue[0], this->queue[this->queue.size() - 1]);
     PageNode *ret = this->queue[this->queue.size() - 1];
     this->queue.pop_back();
+    this->heapify();
     return ret;
   }
 
@@ -102,6 +101,45 @@ public:
   }
 };
 
+std::vector<int> stov(std::string file_line) {
+  std::string num;
+  std::vector<int> line_numbers;
+  for (int i = 0; i < file_line.size(); i++) {
+    if (file_line[i] == ',') {
+      line_numbers.push_back(std::stoi(num));
+      num.erase();
+    } else {
+      num += file_line[i];
+    }
+  }
+  line_numbers.push_back(std::stoi(num));
+  return line_numbers;
+}
+bool check_line(std::vector<int> p_queue_arr, std::vector<int> line_numbers) {
+  std::vector<int> tmp;
+  for (int i = 0; i < p_queue_arr.size(); i++) {
+    for (int j = 0; j < line_numbers.size(); j++) {
+      if (p_queue_arr[i] == line_numbers[j]) {
+        tmp.push_back(p_queue_arr[i]);
+
+        continue;
+      }
+    }
+  }
+
+  for (int i = 0; i < line_numbers.size(); i++) {
+    for (int j = 0; j < tmp.size(); j++) {
+      if (line_numbers[i] == tmp[j]) {
+        if (i < j) {
+          return false;
+        } else {
+          continue;
+        }
+      }
+    }
+  }
+  return true;
+};
 int main(int argc, char *argv[]) {
   std::fstream my_file;
   std::string filename = "small_input.txt";
@@ -125,30 +163,42 @@ int main(int argc, char *argv[]) {
     p = p_queue.find(p_page);
     c = p_queue.find(c_page);
     if (p && c) {
+      p->children.insert(c);
       p_queue.update_priority(p, c);
     } else if (p && !c) {
-      p_queue.insert(p->priority + 1, c_page);
+      c = p_queue.insert(p->priority + 1, c_page);
+      p->children.insert(c);
     } else if (!p && c) {
-      p_queue.insert(c->priority - 1, p_page);
+      p = p_queue.insert(c->priority - 1, p_page);
+      p->children.insert(c);
     } else {
       p = p_queue.insert(0, p_page);
-      p_queue.insert(p->priority + 1, c_page);
+      c = p_queue.insert(p->priority + 1, c_page);
+      p->children.insert(c);
+    }
+    p_queue.print_queue();
+  }
+
+  p_queue.print_queue();
+  std::vector<int> p_queue_arr;
+  int p_queue_size = p_queue.size(); // define size here because size will
+                                     // decrease with each iteration
+  for (int i = 0; i < p_queue_size; i++) {
+    PageNode *min = p_queue.pop();
+    p_queue_arr.push_back(min->page);
+  }
+  int right_order_mid = 0;
+  while (std::getline(my_file, file_line)) {
+    std::vector<int> line_numbers = stov(file_line);
+    if (check_line(p_queue_arr, line_numbers)) {
+      if (line_numbers.size() % 2 == 0) {
+        std::cout << line_numbers.size() << "\n";
+      }
+      right_order_mid += line_numbers[line_numbers.size() / 2];
     }
   }
+  std::cout << right_order_mid << std::endl;
 
-  // while (std::getline(my_file, file_line)) {
-  //   std::cout << file_line << "\n";
-  //   // TODO: Implement line checker
-  // }
-
-  std::cout << "Insert end\n";
-  p_queue.print_queue();
-  std::cout << p_queue.size() << " Size\n\n";
-  while (p_queue.size()) {
-    PageNode *min = p_queue.pop();
-    std::cout << min->page << " " << min->priority << "\n";
-  }
-  std::cout << std::endl;
   my_file.close();
   return 0;
 }
