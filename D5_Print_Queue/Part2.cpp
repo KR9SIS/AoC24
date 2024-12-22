@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 void print_children(std::vector<int> line_numbers,
@@ -51,6 +52,22 @@ bool checkline(std::vector<int> line_numbers,
   return true;
 }
 
+std::vector<int> fix_line(std::vector<int> line_numbers,
+                          std::map<int, std::set<int>> rules) {
+  while (!checkline(line_numbers, rules)) {
+    for (int i = line_numbers.size() - 1; i >= 0; i--) {
+      for (int j = i - 1; j >= 0; j--) {
+        std::set<int> children = rules[line_numbers[j]];
+        if (!std::binary_search(children.begin(), children.end(),
+                                line_numbers[i])) {
+          std::swap(line_numbers[i], line_numbers[j]);
+        }
+      }
+    }
+  }
+  return line_numbers;
+}
+
 int main(int argc, char *argv[]) {
   std::fstream my_file;
   std::string filename = "d5_input.txt";
@@ -74,8 +91,9 @@ int main(int argc, char *argv[]) {
   int mid_sum = 0;
   while (std::getline(my_file, file_line)) {
     std::vector<int> line_numbers = stov(file_line);
-    if (checkline(line_numbers, rules)) {
-      mid_sum += line_numbers[((line_numbers.size() - 1) / 2)];
+    if (!checkline(line_numbers, rules)) {
+      std::vector<int> fixed_line = fix_line(line_numbers, rules);
+      mid_sum += fixed_line[((fixed_line.size() - 1) / 2)];
     }
   }
   std::cout << "\nSum of middle page numbers: " << mid_sum << std::endl;
