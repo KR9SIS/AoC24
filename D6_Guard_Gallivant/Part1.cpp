@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -9,7 +10,73 @@ class Grid {
   int width = 0;
   std::pair<int, int> guard_coords;
 
+  enum Direction {
+    up,
+    right,
+    down,
+    left,
+  };
+
+  Direction direction = Direction::up;
+
+  void patrol_direction(int x_mod, int y_mod) {
+    while ((0 <= this->guard_coords.first + (1 * x_mod) &&
+            this->guard_coords.first + (1 * x_mod) < this->width &&
+            0 <= this->guard_coords.second + (1 * y_mod) &&
+            this->guard_coords.second + (1 * y_mod) < this->grid.size()) &&
+           (this->grid[this->guard_coords.second + (1 * y_mod)]
+                      [this->guard_coords.first + (1 * x_mod)] != '#')) {
+
+      std::swap(this->grid[this->guard_coords.second][this->guard_coords.first],
+                this->grid[this->guard_coords.second + (1 * y_mod)]
+                          [this->guard_coords.first + (1 * x_mod)]);
+
+      this->guard_coords.first = this->guard_coords.first + (1 * x_mod);
+      this->guard_coords.second = this->guard_coords.second + (1 * y_mod);
+
+      this->guard_positions.insert(
+          {this->guard_coords.first, this->guard_coords.second});
+    };
+  };
+
 public:
+  std::set<std::pair<int, int>> guard_positions;
+  void patrol() {
+    int x_mod = 0;
+    int y_mod = 0;
+    // while guard within grid bounds
+    while (0 <= this->guard_coords.first + (1 * x_mod) &&
+           this->guard_coords.first + (1 * x_mod) < this->width &&
+           0 <= this->guard_coords.second + (1 * y_mod) &&
+           this->guard_coords.second + (1 * y_mod) < this->grid.size()) {
+      print_grid();
+      switch (direction) {
+      case Direction::up:
+        x_mod = 0;
+        y_mod = -1;
+        this->direction = Direction::right;
+        break;
+      case Direction::right:
+        x_mod = 1;
+        y_mod = 0;
+        this->direction = Direction::down;
+        break;
+      case Direction::down:
+        x_mod = 0;
+        y_mod = 1;
+        this->direction = Direction::left;
+        break;
+      case Direction::left:
+        x_mod = -1;
+        y_mod = 0;
+        this->direction = Direction::up;
+        break;
+      }
+
+      patrol_direction(x_mod, y_mod);
+    }
+  }
+
   void insert_row(std::string new_row) {
     if (this->width == 0) {
       this->width = new_row.size();
@@ -41,9 +108,10 @@ public:
               << this->guard_coords.second << std::endl;
   }
 };
+
 int main(int argc, char *argv[]) {
   std::fstream my_file;
-  std::string filename = "small_input.txt";
+  std::string filename = "d6_input.txt";
   my_file.open(filename, std::ios::in);
   if (!my_file.is_open()) {
     std::cout << "File not found: " << filename << std::endl;
@@ -57,6 +125,8 @@ int main(int argc, char *argv[]) {
   }
   my_file.close();
 
-  grid.print_grid();
+  grid.patrol();
+  std::cout << "The guard patrolled " << grid.guard_positions.size()
+            << " positions" << std::endl;
   return 0;
 }
