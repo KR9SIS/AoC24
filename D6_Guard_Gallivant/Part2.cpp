@@ -9,20 +9,20 @@
 
 class Grid {
 
-  enum Direction {
-    up = '^',
-    right = '>',
-    down = 'v',
-    left = '<',
+  char direction_arr[4]{
+      '^',
+      '>',
+      'v',
+      '<',
   };
 
-  Direction direction = Direction::up;
+  char direction;
 
   bool within_bounds(int x_mod, int y_mod) {
-    if ((0 <= this->guard_coords.first + x_mod &&
-         this->guard_coords.first + x_mod < this->width &&
-         0 <= this->guard_coords.second + y_mod &&
-         this->guard_coords.second + y_mod < this->grid.size())) {
+    if (0 <= this->guard_coords.first + x_mod &&
+        this->guard_coords.first + x_mod < this->width &&
+        0 <= this->guard_coords.second + y_mod &&
+        this->guard_coords.second + y_mod < this->grid.size()) {
       return true;
     }
     return false;
@@ -31,7 +31,9 @@ class Grid {
   bool patrol_direction(int x_mod, int y_mod) {
     while (within_bounds(x_mod, y_mod) &&
            (this->grid[this->guard_coords.second + y_mod]
-                      [this->guard_coords.first + x_mod] != '#')) {
+                      [this->guard_coords.first + x_mod] != '#') &&
+           (this->grid[this->guard_coords.second + y_mod]
+                      [this->guard_coords.first + x_mod] != 'O')) {
 
       std::swap(this->grid[this->guard_coords.second][this->guard_coords.first],
                 this->grid[this->guard_coords.second + y_mod]
@@ -62,39 +64,43 @@ public:
     int x_mod = 0;
     int y_mod = 0;
     bool loop = false;
+    this->guard_positions = {};
+    this->direction = this->direction_arr[0];
     // while guard within grid bounds
     while (within_bounds(x_mod, y_mod)) {
 
-      print_grid();
-
-      switch (direction) {
-      case Direction::up:
+      switch (this->direction) {
+      case '^':
         x_mod = 0;
         y_mod = -1;
-        this->grid[this->guard_coords.second][this->guard_coords.first] = up;
+        this->grid[this->guard_coords.second][this->guard_coords.first] =
+            direction;
         loop = patrol_direction(x_mod, y_mod);
-        this->direction = Direction::right;
+        this->direction = direction_arr[1];
         break;
-      case Direction::right:
+      case '>':
         x_mod = 1;
         y_mod = 0;
-        this->grid[this->guard_coords.second][this->guard_coords.first] = right;
+        this->grid[this->guard_coords.second][this->guard_coords.first] =
+            direction;
         loop = patrol_direction(x_mod, y_mod);
-        this->direction = Direction::down;
+        this->direction = direction_arr[2];
         break;
-      case Direction::down:
+      case 'v':
         x_mod = 0;
         y_mod = 1;
-        this->grid[this->guard_coords.second][this->guard_coords.first] = down;
+        this->grid[this->guard_coords.second][this->guard_coords.first] =
+            direction;
         loop = patrol_direction(x_mod, y_mod);
-        this->direction = Direction::left;
+        this->direction = direction_arr[3];
         break;
-      case Direction::left:
+      case '<':
         x_mod = -1;
         y_mod = 0;
-        this->grid[this->guard_coords.second][this->guard_coords.first] = left;
+        this->grid[this->guard_coords.second][this->guard_coords.first] =
+            direction;
         loop = patrol_direction(x_mod, y_mod);
-        this->direction = Direction::up;
+        this->direction = direction_arr[0];
         break;
       }
       if (loop) {
@@ -132,8 +138,7 @@ public:
       std::cout << "\n";
     }
     std::cout << "Guard is at " << this->guard_coords.first << ", "
-              << this->guard_coords.second << "\n"
-              << std::endl;
+              << this->guard_coords.second << std::endl;
   }
 };
 
