@@ -66,6 +66,7 @@ public:
     bool loop = false;
     this->guard_positions = {};
     this->direction = this->direction_arr[0];
+
     // while guard within grid bounds
     while (within_bounds(x_mod, y_mod)) {
 
@@ -157,23 +158,55 @@ int main(int argc, char *argv[]) {
     grid.insert_row(line);
   }
   my_file.close();
-  int loops = 0;
-  // for (int row = 0; row < grid.grid.size(); row++) {
-  //   for (int col = 0; col < grid.width; col++) {
-  //     char val = grid.grid[row][col];
-  //     if (val == '#' || val == '^') {
-  //       continue;
-  //     } else {
-  //       grid.grid[row][col] = '#';
-  //       if (grid.patrol()) {
-  //         loops++;
-  //       };
-  //       grid.grid[row][col] = val;
-  //     }
-  //   }
-  // }
-  // std::cout << "The guard looped at " << loops << " positions" << std::endl;
-  grid.patrol();
-  std::cout << grid.guard_positions.size() << std::endl;
+
+  std::vector<std::pair<int, int>> loops;
+  std::pair<int, int> guard_start_pos = {grid.guard_coords.first,
+                                         grid.guard_coords.second};
+
+  bool loop = grid.patrol();
+  if (loop) {
+    std::cout << "true" << std::endl;
+    grid.print_grid();
+    return 0;
+  }
+  grid.grid[guard_start_pos.second][guard_start_pos.first] = '^';
+  grid.grid[grid.guard_coords.second][grid.guard_coords.first] = '.';
+  grid.guard_coords.first = guard_start_pos.first;
+  grid.guard_coords.second = guard_start_pos.second;
+  std::set<std::pair<int, int>> first_route;
+  for (std::tuple<int, int, char> pos : grid.guard_positions) {
+    first_route.insert({std::get<0>(pos), std::get<1>(pos)});
+  }
+
+  for (std::tuple<int, int> pos : first_route) {
+    // std::cout << "Start new iteration\n";
+    // grid.print_grid();
+    int row = std::get<0>(pos);
+    int col = std::get<1>(pos);
+    char val = grid.grid[row][col];
+    grid.grid[row][col] = 'O';
+    // std::cout << "Place obstacle\n";
+    // grid.print_grid();
+
+    if (grid.patrol()) {
+      loops.push_back({row, col});
+    };
+    // std::cout << "After patrol\n";
+    // grid.print_grid();
+
+    grid.grid[guard_start_pos.second][guard_start_pos.first] = '^';
+    grid.grid[grid.guard_coords.second][grid.guard_coords.first] = '.';
+    grid.guard_coords.first = guard_start_pos.first;
+    grid.guard_coords.second = guard_start_pos.second;
+    // std::cout << "After guard pos cleanup\n";
+    // grid.print_grid();
+    grid.grid[row][col] = val;
+    // grid.print_grid();
+    // std::cout << "After obstacle cleanup\n";
+    // std::cout << "\n\n";
+  }
+  std::cout << "The guard looped at " << loops.size() << " positions"
+            << std::endl;
+
   return 0;
 }
